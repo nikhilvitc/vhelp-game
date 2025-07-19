@@ -9,12 +9,12 @@ export default function Match() {
   useEffect(() => {
     socket.emit('find_match', state);
 
-    socket.on('match_found', ({ opponent }) => {
-      navigate('/questions', { state: { ...state, opponent } });
+    socket.on('start_questions', ({ questions, gameId }) => {
+      navigate('/questions', { state: { ...state, questions, gameId } });
     });
 
     return () => {
-      socket.off('match_found');
+      socket.off('start_questions');
     };
   }, [state, navigate]);
 
