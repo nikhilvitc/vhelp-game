@@ -2,12 +2,17 @@ const UserSession = require('../models/UserSession');
 const Question = require('../models/Question');
 let queue = [];
 let activeGames = {};
+let lobbies = {};
+
+function generateLobbyCode() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
 
 module.exports = (io) => {
   io.on('connection', (socket) => {
+    // QUICK MATCH (unchanged)
     socket.on('find_match', async (userData) => {
       console.log('User looking for match:', userData, socket.id);
-      // Create or update user session
       await UserSession.findOneAndUpdate(
         { socketId: socket.id },
         { socketId: socket.id, name: userData.name, anonymous: userData.anonymous, answers: [] },
@@ -18,9 +23,7 @@ module.exports = (io) => {
       if (queue.length >= 2) {
         const [user1, user2] = queue.splice(0, 2);
         console.log('Matched:', user1.socketId, user2.socketId);
-        // Fetch 5 random questions
         const questions = await Question.aggregate([{ $sample: { size: 5 } }]);
-        // Create a game session
         const gameId = user1.socketId + '_' + user2.socketId;
         activeGames[gameId] = {
           users: [user1.socketId, user2.socketId],
@@ -29,35 +32,82 @@ module.exports = (io) => {
           answers: {},
           timers: {},
         };
-        // Send questions to both users (only send the first question)
         io.to(user1.socketId).emit('start_questions', { questions, gameId });
         io.to(user2.socketId).emit('start_questions', { questions, gameId });
         sendQuestion(io, gameId);
       }
     });
 
+    // LOBBY SYSTEM
+    socket.on('create_lobby', async (userData, cb) => {
+      let code;
+      do {
+        code = generateLobbyCode();
+      } while (lobbies[code]);
+      lobbies[code] = { users: [socket.id], userData: [userData] };
+      await UserSession.findOneAndUpdate(
+        { socketId: socket.id },
+        { socketId: socket.id, name: userData.name, anonymous: userData.anonymous, answers: [] },
+        { upsert: true }
+      );
+      cb && cb({ code });
+    });
+
+    socket.on('join_lobby', async ({ code, userData }, cb) => {
+      const lobby = lobbies[code];
+      if (!lobby) return cb && cb({ error: 'Lobby not found' });
+      if (lobby.users.length >= 2) return cb && cb({ error: 'Lobby full' });
+      lobby.users.push(socket.id);
+      lobby.userData.push(userData);
+      await UserSession.findOneAndUpdate(
+        { socketId: socket.id },
+        { socketId: socket.id, name: userData.name, anonymous: userData.anonymous, answers: [] },
+        { upsert: true }
+      );
+      // Notify both users lobby is ready
+      io.to(lobby.users[0]).emit('lobby_ready', { code });
+      io.to(lobby.users[1]).emit('lobby_ready', { code });
+      cb && cb({ success: true });
+    });
+
+    socket.on('start_lobby_game', async ({ code }) => {
+      const lobby = lobbies[code];
+      if (!lobby || lobby.users.length < 2) return;
+      const [user1, user2] = lobby.users;
+      const questions = await Question.aggregate([{ $sample: { size: 5 } }]);
+      const gameId = user1 + '_' + user2;
+      activeGames[gameId] = {
+        users: [user1, user2],
+        questions,
+        current: 0,
+        answers: {},
+        timers: {},
+      };
+      io.to(user1).emit('start_questions', { questions, gameId });
+      io.to(user2).emit('start_questions', { questions, gameId });
+      sendQuestion(io, gameId);
+      delete lobbies[code];
+    });
+
+    // ...rest of the code (question_answered, disconnect, sendQuestion)
     socket.on('question_answered', ({ gameId, answer }) => {
       const game = activeGames[gameId];
       if (!game) return;
       game.answers[socket.id] = answer;
-      // If both answered
       if (Object.keys(game.answers).length === 2) {
         clearTimeout(game.timers[game.current]);
         const [a1, a2] = Object.values(game.answers);
         if (a1 === a2) {
-          // Next question or end
           game.current++;
           if (game.current < game.questions.length) {
             game.answers = {};
             sendQuestion(io, gameId);
           } else {
-            // All matched, allow chat
             io.to(game.users[0]).emit('all_matched', { opponentSocketId: game.users[1] });
             io.to(game.users[1]).emit('all_matched', { opponentSocketId: game.users[0] });
             delete activeGames[gameId];
           }
         } else {
-          // Answers differ, end game
           io.to(game.users[0]).emit('end_game');
           io.to(game.users[1]).emit('end_game');
           delete activeGames[gameId];
@@ -68,13 +118,20 @@ module.exports = (io) => {
     socket.on('disconnect', async () => {
       queue = queue.filter(u => u.socketId !== socket.id);
       await UserSession.deleteOne({ socketId: socket.id });
-      // Clean up active games
       for (const gameId in activeGames) {
         if (activeGames[gameId].users.includes(socket.id)) {
           clearTimeout(activeGames[gameId].timers[activeGames[gameId].current]);
           const other = activeGames[gameId].users.find(u => u !== socket.id);
           io.to(other).emit('end_game');
           delete activeGames[gameId];
+        }
+      }
+      // Remove from lobbies
+      for (const code in lobbies) {
+        if (lobbies[code].users.includes(socket.id)) {
+          lobbies[code].users = lobbies[code].users.filter(u => u !== socket.id);
+          lobbies[code].userData = lobbies[code].userData.filter((_, i) => lobbies[code].users[i] !== socket.id);
+          if (lobbies[code].users.length === 0) delete lobbies[code];
         }
       }
     });
@@ -87,7 +144,6 @@ function sendQuestion(io, gameId) {
   const q = game.questions[game.current];
   io.to(game.users[0]).emit('question', { question: q, index: game.current });
   io.to(game.users[1]).emit('question', { question: q, index: game.current });
-  // Start 20s timer
   game.timers[game.current] = setTimeout(() => {
     io.to(game.users[0]).emit('end_game');
     io.to(game.users[1]).emit('end_game');
