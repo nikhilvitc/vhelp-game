@@ -11,6 +11,7 @@ export default function Home() {
   const [waiting, setWaiting] = useState(false);
   const [error, setError] = useState('');
   const [lobbyReady, setLobbyReady] = useState(false);
+  const [isCreator, setIsCreator] = useState(false);
   const navigate = useNavigate();
 
   const handleStart = () => {
@@ -21,6 +22,7 @@ export default function Home() {
     setError('');
     setLobbyMode('create');
     setWaiting(true);
+    setIsCreator(true);
     socket.emit('create_lobby', { name, anonymous }, ({ code }) => {
       setLobbyCode(code);
       setWaiting(false);
@@ -33,6 +35,7 @@ export default function Home() {
   const handleJoinLobby = () => {
     setError('');
     setLobbyMode('join');
+    setIsCreator(false);
   };
 
   const handleJoinSubmit = () => {
@@ -50,18 +53,22 @@ export default function Home() {
 
   const handleStartLobbyGame = () => {
     socket.emit('start_lobby_game', { code: lobbyCode });
-    setLobbyMode(null);
-    setLobbyCode('');
-    setLobbyReady(false);
-    navigate('/questions', { state: { anonymous, name } });
   };
 
   // Clean up listeners on unmount
   React.useEffect(() => {
+    const onGameStarted = ({ questions, gameId }) => {
+      setLobbyMode(null);
+      setLobbyCode('');
+      setLobbyReady(false);
+      navigate('/questions', { state: { anonymous, name, questions, gameId } });
+    };
+    socket.on('lobby_game_started', onGameStarted);
     return () => {
       socket.off('lobby_ready');
+      socket.off('lobby_game_started', onGameStarted);
     };
-  }, []);
+  }, [navigate, name, anonymous]);
 
   return (
     <div style={{ textAlign: 'center', marginTop: 100 }}>
@@ -146,7 +153,7 @@ export default function Home() {
           <h2>Your Lobby Code:</h2>
           <div style={{ fontSize: 32, fontWeight: 'bold', letterSpacing: 4, margin: 10 }}>{lobbyCode || '...'}</div>
           {!lobbyReady && <div>Waiting for another player to join...</div>}
-          {lobbyReady && <button onClick={handleStartLobbyGame} style={{ marginTop: 20, padding: '10px 30px', fontSize: 18 }}>Start Now</button>}
+          {lobbyReady && isCreator && <button onClick={handleStartLobbyGame} style={{ marginTop: 20, padding: '10px 30px', fontSize: 18 }}>Start Now</button>}
         </div>
       )}
       {lobbyMode === 'join' && (
@@ -160,7 +167,7 @@ export default function Home() {
           />
           <button onClick={handleJoinSubmit} style={{ marginLeft: 10, padding: '10px 30px', fontSize: 18 }}>Join</button>
           {lobbyCode && <div style={{ marginTop: 20 }}>Joined lobby <b>{lobbyCode}</b>. Waiting for another player...</div>}
-          {lobbyReady && <button onClick={handleStartLobbyGame} style={{ marginTop: 20, padding: '10px 30px', fontSize: 18 }}>Start Now</button>}
+          {/* Only creator sees Start Now */}
         </div>
       )}
       {waiting && <div style={{ marginTop: 20 }}>Please wait...</div>}

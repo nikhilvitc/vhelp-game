@@ -83,8 +83,8 @@ module.exports = (io) => {
         answers: {},
         timers: {},
       };
-      io.to(user1).emit('start_questions', { questions, gameId });
-      io.to(user2).emit('start_questions', { questions, gameId });
+      io.to(user1).emit('lobby_game_started', { questions, gameId });
+      io.to(user2).emit('lobby_game_started', { questions, gameId });
       sendQuestion(io, gameId);
       delete lobbies[code];
     });
