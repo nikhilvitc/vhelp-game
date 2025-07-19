@@ -80,28 +80,29 @@ export default function Questions() {
     socket.emit('question_answered', { gameId, answer: ans });
   };
 
-  if (oops) return <div style={{ textAlign: 'center', marginTop: 100, color: 'red', fontSize: 24 }}>Oops, better luck next time!</div>;
-  if (waiting) return <div style={{ textAlign: 'center', marginTop: 100 }}>Waiting for your partner...</div>;
-  if (!question) return <div style={{ textAlign: 'center', marginTop: 100 }}>Loading question...</div>;
+  if (oops) return <ResultScreen matched={false} onRetry={() => navigate('/')} />;
+  if (waiting) return <div className="text-center mt-10">Waiting for your partner...</div>;
+  if (!question) return <div className="text-center mt-10">Loading question...</div>;
 
   return (
-    <div style={{ textAlign: 'center', marginTop: 100 }}>
-      <h2>{question.question}</h2>
-      <button
-        onClick={() => handleAnswer('A')}
-        disabled={answered}
-        style={{ marginRight: 20 }}
-      >
-        {question.optionA}
-      </button>
-      <button
-        onClick={() => handleAnswer('B')}
-        disabled={answered}
-      >
-        {question.optionB}
-      </button>
-      <div style={{ marginTop: 20, fontSize: 18 }}>Time left: {timer}s</div>
-      <div>Question {index + 1} of 5</div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white py-10 px-4">
+      <div className="max-w-md w-full mx-auto bg-white rounded shadow p-6 flex flex-col items-center">
+        <div className="mb-2 text-sm text-gray-700">Question {index + 1} / {questions.length}</div>
+        <div className="mb-4 text-lg font-bold text-black text-center">{question.question}</div>
+        <div className="flex flex-col gap-3 w-full mb-4">
+          { [question.optionA, question.optionB].map((opt, i) => (
+            <button
+              key={i}
+              className="w-full py-2 bg-blue-500 text-white rounded"
+              onClick={() => handleAnswer(i)}
+              disabled={answered}
+            >
+              {opt}
+            </button>
+          )) }
+        </div>
+        <div className="text-sm text-gray-600">Time left: {timer}s</div>
+      </div>
     </div>
   );
 } 

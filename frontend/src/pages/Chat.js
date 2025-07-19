@@ -49,33 +49,29 @@ export default function Chat() {
     }
   };
 
-  if (timer <= 0) return <div>Chat ended!</div>;
+  if (timer <= 0) return <div className="text-center mt-20 text-xl font-bold text-accent">Chat ended!</div>;
 
   return (
-    <div style={{ maxWidth: 400, margin: '100px auto', border: '1px solid #ccc', borderRadius: 8, padding: 20 }}>
-      <div style={{ minHeight: 200, marginBottom: 10 }}>
-        {messages.map((msg, i) => (
-          <div key={i} style={{ textAlign: msg.from === 'me' ? 'right' : 'left' }}>
-            <span style={{ background: '#f0f0f0', borderRadius: 4, padding: '2px 8px', display: 'inline-block', margin: '2px 0' }}>
-              {msg.message}
-            </span>
-          </div>
-        ))}
-      </div>
-      <div>
-        <input
-          ref={inputRef}
-          value={input}
-          maxLength={20}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && sendMessage()}
-          style={{ width: '80%' }}
-          disabled={timer <= 0}
-        />
-        <button onClick={sendMessage} disabled={timer <= 0 || !input.trim()}>Send</button>
-      </div>
-      <div style={{ marginTop: 10, color: '#888' }}>
-        Time left: {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white py-10 px-4">
+      <div className="max-w-md w-full mx-auto bg-white rounded shadow p-6 flex flex-col items-center">
+        <div className="mb-2 text-sm text-gray-700">Time left: {timer}s</div>
+        <div className="w-full flex-1 mb-4 overflow-y-auto" style={{ maxHeight: 200 }}>
+          {messages.map((msg, idx) => (
+            <div key={idx} className={`mb-1 text-sm ${msg.from === 'me' ? 'text-blue-700 text-right' : 'text-gray-800 text-left'}`}>{msg.message}</div>
+          ))}
+        </div>
+        <div className="flex w-full gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            maxLength={20}
+            className="flex-1 px-2 py-1 border rounded"
+            disabled={timer <= 0}
+            onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
+          />
+          <button onClick={sendMessage} className="px-4 py-1 bg-blue-500 text-white rounded" disabled={timer <= 0}>Send</button>
+        </div>
       </div>
     </div>
   );

@@ -71,107 +71,56 @@ export default function Home() {
   }, [navigate, name, anonymous]);
 
   return (
-    <div style={{ textAlign: 'center', marginTop: 100 }}>
-      <h1 style={{ fontSize: 36, marginBottom: 10 }}>1v1 Compatibility Game</h1>
-      <p style={{ fontSize: 18, color: '#666', marginBottom: 30 }}>
-        Find a partner and see how compatible you are!<br />
-        Answer 5 fun questions and chat if you match.
-      </p>
-      <div style={{ marginBottom: 20 }}>
-        <label style={{ fontSize: 16 }}>
-          <input
-            type="checkbox"
-            checked={anonymous}
-            onChange={() => setAnonymous(!anonymous)}
-            style={{ marginRight: 8 }}
-          />
-          Stay Anonymous
-        </label>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white py-10 px-4">
+      <div className="max-w-md w-full mx-auto bg-white rounded shadow p-6 flex flex-col items-center">
+        <h1 className="text-2xl font-bold mb-2">1v1 Compatibility Game</h1>
+        <p className="text-base text-gray-700 mb-4 text-center">
+          Find a partner and see how compatible you are! Answer 5 fun questions and chat if you match.
+        </p>
+        <div className="flex items-center gap-2 mb-4">
+          <label className="text-sm">Anonymous</label>
+          <input type="checkbox" checked={anonymous} onChange={() => setAnonymous(!anonymous)} />
+        </div>
         {!anonymous && (
           <input
             type="text"
             placeholder="Enter your name"
             value={name}
             onChange={e => setName(e.target.value)}
-            style={{ marginLeft: 10, padding: 6, fontSize: 16, borderRadius: 4, border: '1px solid #ccc' }}
+            className="mb-4 px-2 py-1 border rounded w-full text-center"
           />
         )}
+        {!lobbyMode && (
+          <div className="flex flex-col gap-3 w-full mt-2">
+            <button onClick={handleStart} className="w-full py-2 bg-blue-500 text-white rounded">Quick Match</button>
+            <button onClick={handleCreateLobby} className="w-full py-2 bg-green-500 text-white rounded">Create Lobby</button>
+            <button onClick={handleJoinLobby} className="w-full py-2 bg-gray-500 text-white rounded">Join Lobby</button>
+          </div>
+        )}
+        {lobbyMode === 'create' && (
+          <div className="mt-6 flex flex-col items-center w-full">
+            <div className="text-base mb-2">Your Lobby Code:</div>
+            <div className="text-xl font-mono font-bold text-blue-700 mb-2">{lobbyCode || '...'}</div>
+            {!lobbyReady && <div className="text-sm text-gray-500 mb-2">Waiting for another player to join...</div>}
+            {lobbyReady && isCreator && <button onClick={handleStartLobbyGame} className="w-full py-2 bg-blue-600 text-white rounded">Start Now</button>}
+          </div>
+        )}
+        {lobbyMode === 'join' && (
+          <div className="mt-6 flex flex-col items-center w-full">
+            <input
+              type="text"
+              placeholder="Enter Lobby Code"
+              value={inputCode}
+              onChange={e => setInputCode(e.target.value)}
+              className="text-lg px-2 py-1 border rounded w-full text-center mb-2"
+            />
+            <button onClick={handleJoinSubmit} className="w-full py-2 bg-blue-500 text-white rounded mb-2">Join</button>
+            {lobbyCode && <div className="text-base text-gray-700 mb-2">Joined lobby <b>{lobbyCode}</b>. Waiting for another player...</div>}
+          </div>
+        )}
+        {waiting && <div className="text-sm text-gray-500 mt-2">Please wait...</div>}
+        {error && <div className="text-red-500 mt-2">{error}</div>}
       </div>
-      {!lobbyMode && (
-        <>
-          <button
-            onClick={handleStart}
-            style={{
-              padding: '12px 32px',
-              fontSize: 18,
-              background: '#4f8cff',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-              marginRight: 10
-            }}
-          >
-            Find a Partner
-          </button>
-          <button
-            onClick={handleCreateLobby}
-            style={{
-              padding: '12px 32px',
-              fontSize: 18,
-              background: '#34b233',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-              marginRight: 10
-            }}
-          >
-            Create Lobby
-          </button>
-          <button
-            onClick={handleJoinLobby}
-            style={{
-              padding: '12px 32px',
-              fontSize: 18,
-              background: '#ffb300',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-            }}
-          >
-            Join Lobby
-          </button>
-        </>
-      )}
-      {lobbyMode === 'create' && (
-        <div style={{ marginTop: 30 }}>
-          <h2>Your Lobby Code:</h2>
-          <div style={{ fontSize: 32, fontWeight: 'bold', letterSpacing: 4, margin: 10 }}>{lobbyCode || '...'}</div>
-          {!lobbyReady && <div>Waiting for another player to join...</div>}
-          {lobbyReady && isCreator && <button onClick={handleStartLobbyGame} style={{ marginTop: 20, padding: '10px 30px', fontSize: 18 }}>Start Now</button>}
-        </div>
-      )}
-      {lobbyMode === 'join' && (
-        <div style={{ marginTop: 30 }}>
-          <input
-            type="text"
-            placeholder="Enter Lobby Code"
-            value={inputCode}
-            onChange={e => setInputCode(e.target.value)}
-            style={{ fontSize: 20, padding: 8, borderRadius: 4, border: '1px solid #ccc', letterSpacing: 2 }}
-          />
-          <button onClick={handleJoinSubmit} style={{ marginLeft: 10, padding: '10px 30px', fontSize: 18 }}>Join</button>
-          {lobbyCode && <div style={{ marginTop: 20 }}>Joined lobby <b>{lobbyCode}</b>. Waiting for another player...</div>}
-          {/* Only creator sees Start Now */}
-        </div>
-      )}
-      {waiting && <div style={{ marginTop: 20 }}>Please wait...</div>}
-      {error && <div style={{ color: 'red', marginTop: 10 }}>{error}</div>}
     </div>
   );
 } 
