@@ -1,11 +1,654 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>1v1 Compatibility Game</title>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html> 
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Animated background elements */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.08)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.06)"/></svg>');
+            animation: float 20s infinite linear;
+            pointer-events: none;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(360deg); }
+        }
+        
+        .container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .game-card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.6);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: rotate(45deg) translateX(-200%); }
+            50% { transform: rotate(45deg) translateX(-200%); }
+            100% { transform: rotate(45deg) translateX(200%); }
+        }
+        
+        .header {
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .toggle-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9ff, #e8f4f8);
+            border-radius: 15px;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        
+        .toggle-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 1rem;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ddd;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-switch.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        }
+        
+        .toggle-switch::before {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .toggle-switch.active::before {
+            transform: translateX(30px);
+        }
+        
+        .name-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border: 3px solid #e0e0e0;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #ffffff, #f8f9ff);
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-family: 'Fredoka', sans-serif;
+        }
+        
+        .name-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .game-button {
+            padding: 18px 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Fredoka', sans-serif;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        
+        .game-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: all 0.5s ease;
+        }
+        
+        .game-button:hover::before {
+            left: 100%;
+        }
+        
+        .game-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+        }
+        
+        .quick-match {
+            background: linear-gradient(45deg, #ff6b6b, #ff8787);
+            color: white;
+        }
+        
+        .create-lobby {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+        
+        .join-lobby {
+            background: linear-gradient(45deg, #45b7d1, #96c93d);
+            color: white;
+        }
+        
+        .back-button {
+            background: linear-gradient(45deg, #666, #888);
+            color: white;
+            padding: 12px 25px;
+            font-size: 1rem;
+        }
+        
+        .lobby-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #fff7e6, #ffe0b3);
+            border-radius: 20px;
+            border: 3px solid #ffd700;
+        }
+        
+        .lobby-code {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ff6b6b;
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin: 15px 0;
+            border: 3px dashed #ff6b6b;
+            letter-spacing: 3px;
+        }
+        
+        .status-text {
+            color: #666;
+            font-size: 1rem;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        
+        .waiting-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .dot:nth-child(2) { animation-delay: 0.5s; }
+        .dot:nth-child(3) { animation-delay: 1s; }
+        
+        @keyframes pulse {
+            0%, 60%, 100% { transform: scale(1); opacity: 1; }
+            30% { transform: scale(1.2); opacity: 0.7; }
+        }
+        
+        .error-message {
+            background: linear-gradient(45deg, #ff6b6b, #ff8787);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+            font-weight: 500;
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .health-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 480px) {
+            .game-card {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .game-button {
+                padding: 15px 25px;
+                font-size: 1.1rem;
+            }
+        }
+        
+        /* Decorative elements */
+        .decoration {
+            position: absolute;
+            pointer-events: none;
+        }
+        
+        .heart {
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            color: rgba(255, 107, 107, 0.3);
+            animation: heartbeat 2s infinite;
+        }
+        
+        .star {
+            bottom: 20px;
+            left: 20px;
+            font-size: 1.5rem;
+            color: rgba(255, 215, 0, 0.4);
+            animation: twinkle 3s infinite;
+        }
+        
+        @keyframes heartbeat {
+            0%, 50%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.4; transform: rotate(0deg); }
+            50% { opacity: 1; transform: rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="health-status" id="healthStatus">
+        🔄 Checking connection...
+    </div>
+    
+    <div class="container">
+        <div class="game-card">
+            <div class="decoration heart">💖</div>
+            <div class="decoration star">⭐</div>
+            
+            <div class="header">
+                <h1 class="title">VI-Match</h1>
+                <p class="subtitle">Find your perfect buddy and discover your compatibility! Answer fun questions and chat if you're a match.</p>
+            </div>
+            
+            <div class="form-section">
+                <div class="toggle-section">
+                    <span class="toggle-label">Anonymous</span>
+                    <div class="toggle-switch active" id="anonymousToggle"></div>
+                </div>
+                
+                <input 
+                    type="text" 
+                    class="name-input" 
+                    id="nameInput" 
+                    placeholder="Enter your name" 
+                    style="display: none;"
+                />
+            </div>
+            
+            <div class="button-group" id="mainButtons">
+                <button class="game-button quick-match" onclick="startQuickMatch()">
+                    🎯 Quick Match
+                </button>
+                <button class="game-button create-lobby" onclick="createLobby()">
+                    🏠 Create Lobby
+                </button>
+                <button class="game-button join-lobby" onclick="showJoinLobby()">
+                    🚪 Join Lobby
+                </button>
+            </div>
+            
+            <!-- Lobby Creation Section -->
+            <div class="lobby-section" id="createLobbySection" style="display: none;">
+                <h3 style="margin-bottom: 15px; color: #ff6b6b;">🎉 Your Lobby Code:</h3>
+                <div class="lobby-code" id="lobbyCode">LOADING...</div>
+                <div class="status-text" id="lobbyStatus">
+                    <div class="waiting-indicator">
+                        Waiting for someone special to join
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+                <button class="game-button create-lobby" id="startLobbyButton" onclick="startLobbyGame()" style="display: none; margin-top: 15px;">
+                    🚀 Start Game!
+                </button>
+                <button class="game-button back-button" onclick="goBack()" style="margin-top: 10px;">
+                    ← Back
+                </button>
+            </div>
+            
+            <!-- Lobby Join Section -->
+            <div class="lobby-section" id="joinLobbySection" style="display: none;">
+                <h3 style="margin-bottom: 15px; color: #4ecdc4;">🔐 Enter Lobby Code:</h3>
+                <input 
+                    type="text" 
+                    class="name-input" 
+                    id="lobbyCodeInput" 
+                    placeholder="ABCD" 
+                    style="margin-bottom: 15px; text-transform: uppercase;"
+                    maxlength="4"
+                />
+                <button class="game-button join-lobby" onclick="joinLobby()" style="margin-bottom: 10px;">
+                    🎮 Join Game!
+                </button>
+                <div class="status-text" id="joinStatus"></div>
+                <button class="game-button back-button" onclick="goBack()">
+                    ← Back
+                </button>
+            </div>
+            
+            <!-- Error Message -->
+            <div class="error-message" id="errorMessage" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let anonymous = true;
+        let currentMode = null;
+        let lobbyCode = '';
+        
+        // Toggle anonymous mode
+        document.getElementById('anonymousToggle').addEventListener('click', function() {
+            anonymous = !anonymous;
+            const toggle = document.getElementById('anonymousToggle');
+            const nameInput = document.getElementById('nameInput');
+            
+            if (anonymous) {
+                toggle.classList.add('active');
+                nameInput.style.display = 'none';
+            } else {
+                toggle.classList.remove('active');
+                nameInput.style.display = 'block';
+            }
+        });
+        
+        // Mock health check
+        setTimeout(() => {
+            document.getElementById('healthStatus').innerHTML = '✅ Connected & Ready!';
+        }, 2000);
+        
+        function startQuickMatch() {
+            showLoading('Finding your perfect match...');
+            // Simulate finding match
+            setTimeout(() => {
+                showQuestions();
+            }, 3000);
+        }
+        
+        function createLobby() {
+            currentMode = 'create';
+            document.getElementById('mainButtons').style.display = 'none';
+            document.getElementById('createLobbySection').style.display = 'block';
+            
+            // Generate random lobby code
+            const codes = ['LOVE', 'HEART', 'MATCH', 'CUTE', 'SWEET', 'KISS', 'HAPPY'];
+            lobbyCode = codes[Math.floor(Math.random() * codes.length)];
+            document.getElementById('lobbyCode').textContent = lobbyCode;
+            
+            // Simulate someone joining
+            setTimeout(() => {
+                document.getElementById('lobbyStatus').innerHTML = '🎊 Someone joined! Ready to start?';
+                document.getElementById('startLobbyButton').style.display = 'block';
+            }, 5000);
+        }
+        
+        function showJoinLobby() {
+            currentMode = 'join';
+            document.getElementById('mainButtons').style.display = 'none';
+            document.getElementById('joinLobbySection').style.display = 'block';
+        }
+        
+        function joinLobby() {
+            const code = document.getElementById('lobbyCodeInput').value.toUpperCase();
+            const status = document.getElementById('joinStatus');
+            
+            if (code.length !== 4) {
+                showError('Please enter a 4-letter lobby code');
+                return;
+            }
+            
+            status.innerHTML = '<div class="waiting-indicator">Joining lobby ' + code + '<div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+            
+            // Simulate joining
+            setTimeout(() => {
+                if (Math.random() > 0.5) {
+                    status.innerHTML = '🎉 Joined successfully! Waiting for game to start...';
+                    setTimeout(() => {
+                        showQuestions();
+                    }, 3000);
+                } else {
+                    showError('Lobby not found or is full');
+                    status.innerHTML = '';
+                }
+            }, 2000);
+        }
+        
+        function startLobbyGame() {
+            showQuestions();
+        }
+        
+        function goBack() {
+            currentMode = null;
+            document.getElementById('mainButtons').style.display = 'flex';
+            document.getElementById('createLobbySection').style.display = 'none';
+            document.getElementById('joinLobbySection').style.display = 'none';
+            hideError();
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                hideError();
+            }, 5000);
+        }
+        
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+        
+        function showLoading(message) {
+            document.querySelector('.game-card').innerHTML = `
+                <div style="text-align: center; padding: 50px 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 20px;">💖</div>
+                    <h2 style="color: #ff6b6b; margin-bottom: 20px; font-weight: 600;">${message}</h2>
+                    <div class="waiting-indicator" style="justify-content: center;">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function showQuestions() {
+            document.querySelector('.game-card').innerHTML = `
+                <div style="text-align: center;">
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size: 1rem; color: #666; margin-bottom: 10px;">Question 1 / 5</div>
+                        <div style="font-size: 1.3rem; font-weight: 600; color: #333; margin-bottom: 25px;">
+                            What's your ideal first date?
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
+                        <button class="game-button quick-match" onclick="answerQuestion('A')" style="font-size: 1rem; padding: 15px;">
+                            🍽️ Romantic dinner at a fancy restaurant
+                        </button>
+                        <button class="game-button create-lobby" onclick="answerQuestion('B')" style="font-size: 1rem; padding: 15px;">
+                            🎬 Movie night with popcorn at home
+                        </button>
+                    </div>
+                    
+                    <div style="color: #666; font-size: 0.9rem;">⏰ Time left: 18s</div>
+                </div>
+            `;
+        }
+        
+        function answerQuestion(answer) {
+            // Simulate question flow
+            setTimeout(() => {
+                showChatScreen();
+            }, 1000);
+        }
+        
+        function showChatScreen() {
+            document.querySelector('.game-card').innerHTML = `
+                <div style="text-align: center;">
+                    <h2 style="color: #4ecdc4; margin-bottom: 20px; font-weight: 600;">🎉 It's a Match!</h2>
+                    <p style="margin-bottom: 25px; color: #666;">You both answered similarly! Start chatting now.</p>
+                    
+                    <div style="height: 200px; background: #f8f9ff; border-radius: 15px; padding: 15px; margin-bottom: 15px; overflow-y: auto; text-align: left;">
+                        <div style="margin-bottom: 10px; color: #4ecdc4; font-size: 0.9rem;">Partner: Hi there! 👋</div>
+                        <div style="margin-bottom: 10px; color: #ff6b6b; font-size: 0.9rem; text-align: right;">You: Hey! Nice to meet you 😊</div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" placeholder="Type your message..." style="flex: 1; padding: 10px 15px; border: 2px solid #e0e0e0; border-radius: 20px; font-family: 'Fredoka', sans-serif;" maxlength="20">
+                        <button class="game-button create-lobby" style="padding: 10px 20px; font-size: 1rem;">Send</button>
+                    </div>
+                    
+                    <div style="margin-top: 15px; font-size: 0.9rem; color: #666;">⏰ Chat time left: 175s</div>
+                </div>
+            `;
+        }
+        
+        // Auto-uppercase lobby code input
+        document.getElementById('lobbyCodeInput').addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    </script>
+</body>
+</html>
