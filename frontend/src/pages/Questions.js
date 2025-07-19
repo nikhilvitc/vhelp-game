@@ -4,18 +4,25 @@ import socket from '../socket';
 
 export default function Questions() {
   const { state } = useLocation();
+  const [questions, setQuestions] = useState(state?.questions || []);
+  const [gameId, setGameId] = useState(state?.gameId || null);
   const [question, setQuestion] = useState(null);
   const [index, setIndex] = useState(0);
-  const [gameId, setGameId] = useState(null);
   const [answered, setAnswered] = useState(false);
   const [timer, setTimer] = useState(20);
-  const [waiting, setWaiting] = useState(true);
+  const [waiting, setWaiting] = useState(!state?.questions);
   const [oops, setOops] = useState(false);
   const timerRef = useRef();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (state?.questions && state?.gameId) {
+      setQuestions(state.questions);
+      setGameId(state.gameId);
+      setWaiting(false);
+    }
     socket.on('start_questions', ({ questions, gameId }) => {
+      setQuestions(questions);
       setGameId(gameId);
       setWaiting(false);
     });
@@ -55,6 +62,17 @@ export default function Questions() {
     }
     return () => clearInterval(timerRef.current);
   }, [question, answered]);
+
+  // When questions and gameId are set, show the first question
+  useEffect(() => {
+    if (questions.length && gameId && !question) {
+      setQuestion(questions[0]);
+      setIndex(0);
+      setAnswered(false);
+      setTimer(20);
+      setWaiting(false);
+    }
+  }, [questions, gameId, question]);
 
   const handleAnswer = (ans) => {
     if (answered) return;
