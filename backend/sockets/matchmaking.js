@@ -7,6 +7,12 @@ module.exports = (io) => {
   io.on('connection', (socket) => {
     socket.on('find_match', async (userData) => {
       console.log('User looking for match:', userData, socket.id);
+      // Create or update user session
+      await UserSession.findOneAndUpdate(
+        { socketId: socket.id },
+        { socketId: socket.id, name: userData.name, anonymous: userData.anonymous, answers: [] },
+        { upsert: true }
+      );
       queue.push({ ...userData, socketId: socket.id });
       console.log('Current queue:', queue.map(u => u.socketId));
       if (queue.length >= 2) {
