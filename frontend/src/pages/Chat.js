@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import socket from '../socket';
 
 export default function Chat() {
@@ -8,12 +8,22 @@ export default function Chat() {
   const [input, setInput] = useState('');
   const [timer, setTimer] = useState(180);
   const inputRef = useRef();
+  const navigate = useNavigate();
+  const gameId = state?.gameId;
 
   useEffect(() => {
+    // Listen for incoming chat messages
     socket.on('chat_message', ({ message, from }) => {
       setMessages(msgs => [...msgs, { message, from }]);
     });
-    socket.emit('start_chat', { opponentSocketId: state.opponentSocketId });
+
+    // On refresh, request chat history (and delete from DB)
+    if (gameId) {
+      socket.emit('request_chat', { gameId });
+      socket.on('chat_history', ({ messages }) => {
+        setMessages(messages || []);
+      });
+    }
 
     const interval = setInterval(() => {
       setTimer(t => t - 1);
@@ -21,13 +31,19 @@ export default function Chat() {
 
     return () => {
       socket.off('chat_message');
+      socket.off('chat_history');
       clearInterval(interval);
     };
-  }, [state]);
+  }, [gameId]);
 
   const sendMessage = () => {
     if (input.trim() && input.length <= 20) {
-      socket.emit('chat_message', { message: input, to: state.opponentSocketId });
+      socket.emit('chat_message', {
+        gameId,
+        message: input,
+        from: 'me',
+        to: state.opponentSocketId
+      });
       setMessages(msgs => [...msgs, { message: input, from: 'me' }]);
       setInput('');
     }
