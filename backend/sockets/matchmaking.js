@@ -6,9 +6,12 @@ let activeGames = {};
 module.exports = (io) => {
   io.on('connection', (socket) => {
     socket.on('find_match', async (userData) => {
+      console.log('User looking for match:', userData, socket.id);
       queue.push({ ...userData, socketId: socket.id });
+      console.log('Current queue:', queue.map(u => u.socketId));
       if (queue.length >= 2) {
         const [user1, user2] = queue.splice(0, 2);
+        console.log('Matched:', user1.socketId, user2.socketId);
         // Fetch 5 random questions
         const questions = await Question.aggregate([{ $sample: { size: 5 } }]);
         // Create a game session
