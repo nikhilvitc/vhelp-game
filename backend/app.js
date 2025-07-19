@@ -12,4 +12,17 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 
 app.use('/api/questions', require('./routes/questionRoutes'));
 
+app.get('/api/health', async (req, res) => {
+  try {
+    await mongoose.connection.db.admin().ping();
+    res.json({ status: 'ok', db: 'connected' });
+  } catch (e) {
+    res.status(500).json({ status: 'error', db: 'disconnected' });
+  }
+});
+
+app.get('/', (req, res) => {
+  res.send('Backend is running! Use the frontend to play the game.');
+});
+
 module.exports = app; 
