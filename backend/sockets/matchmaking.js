@@ -1,5 +1,6 @@
 const UserSession = require('../models/UserSession');
 const Question = require('../models/Question');
+const TempChat = require('../models/TempChat');
 let queue = [];
 let activeGames = {};
 let lobbies = {};
@@ -103,8 +104,11 @@ module.exports = (io) => {
             game.answers = {};
             sendQuestion(io, gameId);
           } else {
-            io.to(game.users[0]).emit('all_matched', { opponentSocketId: game.users[1] });
-            io.to(game.users[1]).emit('all_matched', { opponentSocketId: game.users[0] });
+            // All matched, allow chat
+            io.to(game.users[0]).emit('all_matched', { opponentSocketId: game.users[1], gameId });
+            io.to(game.users[1]).emit('all_matched', { opponentSocketId: game.users[0], gameId });
+            // Create temp chat
+            TempChat.create({ gameId, messages: [] });
             delete activeGames[gameId];
           }
         } else {
@@ -112,6 +116,26 @@ module.exports = (io) => {
           io.to(game.users[1]).emit('end_game');
           delete activeGames[gameId];
         }
+      }
+    });
+
+    // Chat message handling
+    socket.on('chat_message', async ({ gameId, message, from, to }) => {
+      if (!message || !gameId) return;
+      // Save to temp chat
+      await TempChat.findOneAndUpdate(
+        { gameId },
+        { $push: { messages: { from, text: message, timestamp: new Date() } } }
+      );
+      io.to(to).emit('chat_message', { message, from });
+    });
+
+    // Request chat on refresh
+    socket.on('request_chat', async ({ gameId }) => {
+      const chat = await TempChat.findOne({ gameId });
+      if (chat) {
+        socket.emit('chat_history', { messages: chat.messages });
+        await TempChat.deleteOne({ gameId }); // Delete after sending
       }
     });
 
