@@ -13,6 +13,10 @@ module.exports = (io) => {
   io.on('connection', (socket) => {
     // QUICK MATCH (unchanged)
     socket.on('find_match', async (userData) => {
+      if (!userData || typeof userData !== 'object') {
+        socket.emit('error', { message: 'Invalid user data for matchmaking.' });
+        return;
+      }
       console.log('User looking for match:', userData, socket.id);
       await UserSession.findOneAndUpdate(
         { socketId: socket.id },
@@ -26,15 +30,17 @@ module.exports = (io) => {
         console.log('Matched:', user1.socketId, user2.socketId);
         const questions = await Question.aggregate([{ $sample: { size: 5 } }]);
         const gameId = user1.socketId + '_' + user2.socketId;
+        const quickCode = generateLobbyCode(); // 6-char code
         activeGames[gameId] = {
           users: [user1.socketId, user2.socketId],
           questions,
           current: 0,
           answers: {},
           timers: {},
+          quickCode,
         };
-        io.to(user1.socketId).emit('start_questions', { questions, gameId });
-        io.to(user2.socketId).emit('start_questions', { questions, gameId });
+        io.to(user1.socketId).emit('start_questions', { questions, gameId, code: quickCode });
+        io.to(user2.socketId).emit('start_questions', { questions, gameId, code: quickCode });
         sendQuestion(io, gameId);
       }
     });
