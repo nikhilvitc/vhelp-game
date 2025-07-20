@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import socket from '../socket';
+import winSound from '../assets/win.mp3';
 
 function OopsModal({ onRetry }) {
   return (
@@ -14,6 +15,21 @@ function OopsModal({ onRetry }) {
         >
           Go Home
         </button>
+      </div>
+    </div>
+  );
+}
+
+function CongratsModal() {
+  useEffect(() => {
+    const audio = new Audio(winSound);
+    audio.play();
+  }, []);
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white rounded-xl shadow-2xl p-8 text-center animate-bounce">
+        <div className="text-5xl mb-2">🎉</div>
+        <h2 className="text-2xl font-bold text-green-600">Congratulations, you won!</h2>
       </div>
     </div>
   );
@@ -38,6 +54,7 @@ export default function Questions() {
   const [waiting, setWaiting] = useState(!state?.questions);
   const [waitingForOpponent, setWaitingForOpponent] = useState(false);
   const [showOops, setShowOops] = useState(false);
+  const [showCongrats, setShowCongrats] = useState(false);
 
   const myName = state?.myName;
   const myAnonymous = state?.myAnonymous;
@@ -76,17 +93,21 @@ export default function Questions() {
     });
 
     socket.on('all_matched', ({ opponentSocketId, myName, myAnonymous, opponentName, opponentAnonymous, gameId }) => {
-      navigate('/chat', {
-        state: {
-          ...state,
-          opponentSocketId,
-          myName,
-          myAnonymous,
-          opponentName,
-          opponentAnonymous,
-          gameId
-        }
-      });
+      setShowCongrats(true);
+      setTimeout(() => {
+        setShowCongrats(false);
+        navigate('/chat', {
+          state: {
+            ...state,
+            opponentSocketId,
+            myName,
+            myAnonymous,
+            opponentName,
+            opponentAnonymous,
+            gameId
+          }
+        });
+      }, 2000);
     });
 
     return () => {
@@ -134,6 +155,7 @@ export default function Questions() {
   };
 
   if (showOops) return <OopsModal onRetry={() => navigate('/')} />;
+  if (showCongrats) return <CongratsModal />;
   if (waiting) return <div className="text-center mt-10 text-xl">🔍 Waiting for your partner...</div>;
   if (!question) return <div className="text-center mt-10 text-xl">⏳ Loading question...</div>;
 
