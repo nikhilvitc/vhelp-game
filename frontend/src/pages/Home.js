@@ -81,17 +81,17 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Listen for lobby_game_started only once
-    const onGameStarted = ({ questions, gameId }) => {
+    // Listen for start_questions for both quick match and lobby
+    const onStartQuestions = ({ questions, gameId, myName, myAnonymous, opponentName, opponentAnonymous }) => {
       setLobbyMode(null);
       setLobbyCode('');
       setLobbyReady(false);
       setJoinedUser(null);
-      navigate('/questions', { state: { anonymous, name, questions, gameId } });
+      navigate('/questions', { state: { anonymous, name, questions, gameId, myName, myAnonymous, opponentName, opponentAnonymous } });
     };
-    socket.on('lobby_game_started', onGameStarted);
+    socket.on('start_questions', onStartQuestions);
     return () => {
-      socket.off('lobby_game_started', onGameStarted);
+      socket.off('start_questions', onStartQuestions);
     };
   }, [navigate, name, anonymous]);
 
