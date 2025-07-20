@@ -5,6 +5,9 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
+const seedRoute = require('./routes/seedRoute');
+app.use('/api', seedRoute);
+
 app.use(cors());
 app.use(express.json());
 
