@@ -51,12 +51,20 @@ export default function Chat() {
     }
   };
 
-  if (timer <= 0) return <div className="text-center mt-20 text-xl font-bold text-red-600">Chat ended!</div>;
+  if (timer <= 0) {
+    return (
+      <div className="text-center mt-20 text-xl font-bold text-red-600">
+        Chat ended!
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100 py-10 px-4">
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-6 flex flex-col">
-        <div className="text-sm text-gray-600 mb-3 text-center font-semibold">🕒 Time left: {timer}s</div>
+        <div className="text-sm text-gray-600 mb-3 text-center font-semibold">
+          🕒 Time left: {timer}s
+        </div>
 
         <div className="flex-1 overflow-y-auto space-y-3 mb-4 max-h-64 pr-2">
           {messages.map((msg, idx) => (
@@ -64,11 +72,13 @@ export default function Chat() {
               key={idx}
               className={`flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-[70%] px-4 py-2 rounded-lg text-sm shadow
-                ${msg.from === 'me' ? 'bg-blue-500 text-white rounded-br-none' : 'bg-gray-200 text-gray-900 rounded-bl-none'}`}>
-                <span className="block font-medium text-xs mb-1">
-                  {msg.from === 'me' ? 'You' : 'Stranger'}
-                </span>
+              <div
+                className={`max-w-[70%] px-4 py-2 rounded-lg text-sm shadow
+                  ${msg.from === 'me'
+                    ? 'bg-blue-500 text-white rounded-br-none'
+                    : 'bg-gray-200 text-gray-900 rounded-bl-none'
+                  }`}
+              >
                 {msg.message}
               </div>
             </div>
@@ -85,7 +95,9 @@ export default function Chat() {
             placeholder="Type a message..."
             className="flex-1 px-3 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300"
             disabled={timer <= 0}
-            onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') sendMessage();
+            }}
           />
           <button
             onClick={sendMessage}
