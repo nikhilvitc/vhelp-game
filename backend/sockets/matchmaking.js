@@ -39,8 +39,24 @@ module.exports = (io) => {
           timers: {},
           quickCode,
         };
-        io.to(user1.socketId).emit('start_questions', { questions, gameId, code: quickCode });
-        io.to(user2.socketId).emit('start_questions', { questions, gameId, code: quickCode });
+        io.to(user1.socketId).emit('start_questions', {
+          questions,
+          gameId,
+          code: quickCode,
+          myName: user1.name,
+          myAnonymous: user1.anonymous,
+          opponentName: user2.name,
+          opponentAnonymous: user2.anonymous
+        });
+        io.to(user2.socketId).emit('start_questions', {
+          questions,
+          gameId,
+          code: quickCode,
+          myName: user2.name,
+          myAnonymous: user2.anonymous,
+          opponentName: user1.name,
+          opponentAnonymous: user1.anonymous
+        });
         sendQuestion(io, gameId);
       }
     });
@@ -90,10 +106,30 @@ module.exports = (io) => {
         answers: {},
         timers: {},
       };
-      io.to(user1).emit('lobby_game_started', { questions, gameId });
-      io.to(user2).emit('lobby_game_started', { questions, gameId });
-      sendQuestion(io, gameId);
-      delete lobbies[code];
+      // Fetch user info for both users
+      Promise.all([
+        UserSession.findOne({ socketId: user1 }),
+        UserSession.findOne({ socketId: user2 })
+      ]).then(([user1Data, user2Data]) => {
+        io.to(user1).emit('start_questions', {
+          questions,
+          gameId,
+          myName: user1Data?.name,
+          myAnonymous: user1Data?.anonymous,
+          opponentName: user2Data?.name,
+          opponentAnonymous: user2Data?.anonymous
+        });
+        io.to(user2).emit('start_questions', {
+          questions,
+          gameId,
+          myName: user2Data?.name,
+          myAnonymous: user2Data?.anonymous,
+          opponentName: user1Data?.name,
+          opponentAnonymous: user1Data?.anonymous
+        });
+        sendQuestion(io, gameId);
+        delete lobbies[code];
+      });
     });
 
     // ...rest of the code (question_answered, disconnect, sendQuestion)

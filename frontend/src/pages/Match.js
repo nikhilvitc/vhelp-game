@@ -9,8 +9,8 @@ export default function Match() {
   useEffect(() => {
     socket.emit('find_match', state);
 
-    socket.on('start_questions', ({ questions, gameId }) => {
-      navigate('/questions', { state: { ...state, questions, gameId } });
+    socket.on('start_questions', ({ questions, gameId, myName, myAnonymous, opponentName, opponentAnonymous }) => {
+      navigate('/questions', { state: { ...state, questions, gameId, myName, myAnonymous, opponentName, opponentAnonymous } });
     });
 
     return () => {
