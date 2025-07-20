@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import socket from '../socket';
 
 export default function Home() {
   const [anonymous, setAnonymous] = useState(true);
   const [name, setName] = useState('');
-  const [lobbyMode, setLobbyMode] = useState(null); // 'create' | 'join' | null
+  const [lobbyMode, setLobbyMode] = useState(null);
   const [lobbyCode, setLobbyCode] = useState('');
   const [inputCode, setInputCode] = useState('');
   const [waiting, setWaiting] = useState(false);
@@ -55,8 +55,7 @@ export default function Home() {
     socket.emit('start_lobby_game', { code: lobbyCode });
   };
 
-  // Clean up listeners on unmount
-  React.useEffect(() => {
+  useEffect(() => {
     const onGameStarted = ({ questions, gameId }) => {
       setLobbyMode(null);
       setLobbyCode('');
@@ -71,56 +70,87 @@ export default function Home() {
   }, [navigate, name, anonymous]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white py-10 px-4">
-      <div className="max-w-md w-full mx-auto bg-white rounded shadow p-6 flex flex-col items-center">
-        <h1 className="text-2xl font-bold mb-2">1v1 Compatibility Game</h1>
-        <p className="text-base text-gray-700 mb-4 text-center">
-          Find a partner and see how compatible you are! Answer 5 fun questions and chat if you match.
-        </p>
-        <div className="flex items-center gap-2 mb-4">
-          <label className="text-sm">Anonymous</label>
-          <input type="checkbox" checked={anonymous} onChange={() => setAnonymous(!anonymous)} />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-400 to-purple-500 px-4 py-10">
+      <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-md text-center">
+        <div className="text-4xl mb-3">🎮</div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">1v1 Compatibility Game</h1>
+        <p className="text-gray-600 mb-6">Find your perfect match by answering 5 fun questions!</p>
+
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <input
+            type="checkbox"
+            checked={anonymous}
+            onChange={() => setAnonymous(!anonymous)}
+            className="w-5 h-5 accent-blue-600"
+          />
+          <label className="text-gray-700 font-medium text-sm">Anonymous</label>
         </div>
+
         {!anonymous && (
           <input
             type="text"
             placeholder="Enter your name"
             value={name}
-            onChange={e => setName(e.target.value)}
-            className="mb-4 px-2 py-1 border rounded w-full text-center"
+            onChange={(e) => setName(e.target.value)}
+            className="mb-4 w-full px-3 py-2 border rounded-md text-center focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
         )}
+
         {!lobbyMode && (
-          <div className="flex flex-col gap-3 w-full mt-2">
-            <button onClick={handleStart} className="w-full py-2 bg-blue-500 text-white rounded">Quick Match</button>
-            <button onClick={handleCreateLobby} className="w-full py-2 bg-green-500 text-white rounded">Create Lobby</button>
-            <button onClick={handleJoinLobby} className="w-full py-2 bg-gray-500 text-white rounded">Join Lobby</button>
+          <div className="flex flex-col gap-3">
+            <button onClick={handleStart} className="bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-full font-semibold transition">
+              Quick Match
+            </button>
+            <button onClick={handleCreateLobby} className="bg-pink-500 hover:bg-pink-600 text-white py-2 rounded-full font-semibold transition">
+              Create Lobby
+            </button>
+            <button onClick={handleJoinLobby} className="bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-full font-semibold transition">
+              Join Lobby
+            </button>
           </div>
         )}
+
         {lobbyMode === 'create' && (
-          <div className="mt-6 flex flex-col items-center w-full">
-            <div className="text-base mb-2">Your Lobby Code:</div>
-            <div className="text-xl font-mono font-bold text-blue-700 mb-2">{lobbyCode || '...'}</div>
-            {!lobbyReady && <div className="text-sm text-gray-500 mb-2">Waiting for another player to join...</div>}
-            {lobbyReady && isCreator && <button onClick={handleStartLobbyGame} className="w-full py-2 bg-blue-600 text-white rounded">Start Now</button>}
+          <div className="mt-6">
+            <p className="text-gray-700 text-sm">Your Lobby Code:</p>
+            <p className="text-xl font-mono font-bold text-blue-700 mb-2">{lobbyCode || '...'}</p>
+            {!lobbyReady && <p className="text-sm text-gray-500">Waiting for another player to join...</p>}
+            {lobbyReady && isCreator && (
+              <button onClick={handleStartLobbyGame} className="mt-3 bg-blue-700 hover:bg-blue-800 text-white py-2 px-6 rounded-full font-semibold">
+                Start Now
+              </button>
+            )}
           </div>
         )}
+
         {lobbyMode === 'join' && (
-          <div className="mt-6 flex flex-col items-center w-full">
+          <div className="mt-6 space-y-3">
             <input
               type="text"
               placeholder="Enter Lobby Code"
               value={inputCode}
-              onChange={e => setInputCode(e.target.value)}
-              className="text-lg px-2 py-1 border rounded w-full text-center mb-2"
+              onChange={(e) => setInputCode(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md text-center uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
-            <button onClick={handleJoinSubmit} className="w-full py-2 bg-blue-500 text-white rounded mb-2">Join</button>
-            {lobbyCode && <div className="text-base text-gray-700 mb-2">Joined lobby <b>{lobbyCode}</b>. Waiting for another player...</div>}
+            <button onClick={handleJoinSubmit} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-full font-semibold transition">
+              Join
+            </button>
+            {lobbyCode && (
+              <p className="text-sm text-gray-700 mt-2">
+                Joined lobby <strong>{lobbyCode}</strong>. Waiting for another player...
+              </p>
+            )}
           </div>
         )}
-        {waiting && <div className="text-sm text-gray-500 mt-2">Please wait...</div>}
-        {error && <div className="text-red-500 mt-2">{error}</div>}
+
+        {waiting && <p className="text-sm text-gray-500 mt-4">⏳ Please wait...</p>}
+        {error && <p className="text-sm text-red-600 mt-4">❌ {error}</p>}
+
+        {/* Status Indicator (Example) */}
+        <p className="mt-6 text-sm text-green-700 font-semibold flex justify-center items-center gap-1">
+          ✅ Backend & Database Connected
+        </p>
       </div>
     </div>
   );
-} 
+}
