@@ -133,7 +133,10 @@ module.exports = (io) => {
         { gameId },
         { $push: { messages: { from, text: message, timestamp: new Date() } } }
       );
-      io.to(to).emit('chat_message', { message, from });
+      // Send to receiver as 'stranger'
+      io.to(to).emit('chat_message', { message, from: 'stranger' });
+      // Send to sender as 'me'
+      io.to(socket.id).emit('chat_message', { message, from: 'me' });
     });
 
     // Request chat on refresh
