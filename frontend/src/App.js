@@ -32,7 +32,7 @@ function AppRoutes() {
         <Route path="/questions" element={<Questions />} />
         <Route path="/chat" element={<Chat />} />
       </Routes>
-      <footer className="fixed bottom-2 left-1/2 transform -translate-x-1/2 text-gray-500 text-xs z-50 bg-white/80 px-4 py-1 rounded-full shadow">
+      <footer className="fixed bottom-2 left-1/2 -translate-x-1/2 w-auto max-w-full text-center text-gray-500 text-xs z-50 bg-white/80 px-4 py-1 rounded-full shadow whitespace-nowrap">
         Made with love <span className="text-red-500">❤️</span> by Nikhil Singh
       </footer>
     </>
