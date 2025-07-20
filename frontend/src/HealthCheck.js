@@ -2,27 +2,33 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 function HealthCheck() {
-  const [status, setStatus] = useState('Checking...');
+  const [live, setLive] = useState(false);
 
   useEffect(() => {
-    const apiUrl = (process.env.REACT_APP_API_URL || 'https://vhelp-game.onrender.com/api').replace(/\/api$/, '') + '/api/health';
+    const apiUrl = (process.env.REACT_APP_API_URL || 'https://vhelp-game.onrender.com/api')
+      .replace(/\/api$/, '') + '/api/health';
+
     axios.get(apiUrl)
       .then(res => {
         if (res.data.status === 'ok' && res.data.db === 'connected') {
-          setStatus('✅ Backend & Database Connected');
-          console.log('Backend and database are connected!');
-        } else {
-          setStatus('❌ Backend or Database Disconnected');
-          console.log('Backend or database are disconnected!');
+          setLive(true);
         }
       })
       .catch(() => {
-        setStatus('❌ Backend or Database Disconnected');
-        console.log('Backend or database are disconnected!');
+        setLive(false); // Do nothing on failure
       });
   }, []);
 
-  return <div style={{textAlign: 'center', margin: 10, color: '#888'}}>{status}</div>;
+  return (
+    <>
+      {live && (
+  <div className="fixed top-2 left-2 text-green-600 text-lg font-bold bg-white/20 backdrop-blur px-5 py-2 rounded-full shadow-md z-50">
+    🟢 Live
+  </div>
+)}
+
+    </>
+  );
 }
 
-export default HealthCheck; 
+export default HealthCheck;
