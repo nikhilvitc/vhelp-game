@@ -133,6 +133,7 @@ module.exports = (io) => {
           opponentName: user1Data?.name,
           opponentAnonymous: user1Data?.anonymous
         });
+        console.log('Emitting start_questions to', user1, user2);
         sendQuestion(io, gameId);
         delete lobbies[code];
       });

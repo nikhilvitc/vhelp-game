@@ -83,10 +83,12 @@ export default function Home() {
   useEffect(() => {
     // Listen for start_questions for both quick match and lobby
     const onStartQuestions = ({ questions, gameId, myName, myAnonymous, opponentName, opponentAnonymous }) => {
+      console.log('Received start_questions in Home.js', { questions, gameId, myName, myAnonymous, opponentName, opponentAnonymous });
       setLobbyMode(null);
       setLobbyCode('');
       setLobbyReady(false);
       setJoinedUser(null);
+      console.log('Navigating to /questions');
       navigate('/questions', { state: { anonymous, name, questions, gameId, myName, myAnonymous, opponentName, opponentAnonymous } });
     };
     socket.on('start_questions', onStartQuestions);
