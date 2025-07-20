@@ -69,13 +69,24 @@ export default function Questions() {
     });
 
     socket.on('end_game', () => {
+      // Only show Oops if not all questions were answered (i.e., not a match)
       setShowOops(true);
       setWaitingForOpponent(false);
       setTimeout(() => navigate('/'), 3000);
     });
 
-    socket.on('all_matched', ({ opponentSocketId }) => {
-      navigate('/chat', { state: { ...state, opponentSocketId } });
+    socket.on('all_matched', ({ opponentSocketId, myName, myAnonymous, opponentName, opponentAnonymous, gameId }) => {
+      navigate('/chat', {
+        state: {
+          ...state,
+          opponentSocketId,
+          myName,
+          myAnonymous,
+          opponentName,
+          opponentAnonymous,
+          gameId
+        }
+      });
     });
 
     return () => {
