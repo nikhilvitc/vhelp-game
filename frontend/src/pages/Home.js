@@ -70,8 +70,16 @@ export default function Home() {
   }, [navigate, name, anonymous]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-400 to-purple-500 px-4 py-10">
-      <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-md text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-400 to-purple-500 px-4 py-10 relative overflow-hidden">
+      {/* Blur Overlay with Spinner */}
+      {waiting && (
+        <div className="absolute inset-0 bg-white bg-opacity-60 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+          <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-700 font-semibold">Please wait... Connecting to the server</p>
+        </div>
+      )}
+
+      <div className={`bg-white rounded-3xl shadow-xl p-8 w-full max-w-md text-center transition duration-300 ease-in-out ${waiting ? 'opacity-30 pointer-events-none' : 'opacity-100'}`}>
         <div className="text-4xl mb-3">🎮</div>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">1v1 Compatibility Game</h1>
         <p className="text-gray-600 mb-6">Find your perfect match by answering 5 fun questions!</p>
@@ -143,13 +151,7 @@ export default function Home() {
           </div>
         )}
 
-        {waiting && <p className="text-sm text-gray-500 mt-4">⏳ Please wait...</p>}
         {error && <p className="text-sm text-red-600 mt-4">❌ {error}</p>}
-
-        {/* Status Indicator (Example) */}
-        <p className="mt-6 text-sm text-green-700 font-semibold flex justify-center items-center gap-1">
-          ✅ Backend & Database Connected
-        </p>
       </div>
     </div>
   );
