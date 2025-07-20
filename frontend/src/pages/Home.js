@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import socket from '../socket';
 
@@ -13,6 +13,7 @@ export default function Home() {
   const [lobbyReady, setLobbyReady] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const navigate = useNavigate();
+  const homeRef = useRef();
 
   const handleStart = () => {
     navigate('/match', { state: { anonymous, name } });
@@ -69,8 +70,24 @@ export default function Home() {
     };
   }, [navigate, name, anonymous]);
 
+  // Force browser back to go to home
+  useEffect(() => {
+    const handlePopState = (e) => {
+      navigate('/', { replace: true });
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [navigate]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-400 to-purple-500 px-4 py-10 relative overflow-hidden">
+    <div ref={homeRef} className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-400 to-purple-500 px-4 py-10 relative overflow-hidden">
+      {/* Home Button */}
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full px-3 py-1 text-sm font-semibold shadow z-10"
+      >
+        🏠 Home
+      </button>
       {/* Blur Overlay with Spinner */}
       {waiting && (
         <div className="absolute inset-0 bg-white bg-opacity-60 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
