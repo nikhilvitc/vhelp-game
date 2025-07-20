@@ -51,24 +51,25 @@ export default function Home() {
     socket.emit('start_lobby_game', { code: lobbyCode });
   };
 
-  useEffect(() => {
-    const onGameStarted = ({ questions, gameId }) => {
-      setLobbyMode(null);
-      setLobbyCode('');
-      setLobbyReady(false);
-      navigate('/questions', { state: { anonymous, name, questions, gameId } });
-    };
-    socket.on('lobby_game_started', onGameStarted);
-    return () => {
-      socket.off('lobby_game_started', onGameStarted);
-    };
-  }, [navigate, name, anonymous]);
+  // Home reset function
+  const resetHome = () => {
+    setAnonymous(true);
+    setName('');
+    setLobbyMode(null);
+    setLobbyCode('');
+    setInputCode('');
+    setWaiting(false);
+    setError('');
+    setLobbyReady(false);
+    setIsCreator(false);
+    setJoinedUser(null);
+    navigate('/', { replace: true });
+  };
 
   useEffect(() => {
     // Listen for lobby_ready only once
     const onLobbyReady = (data) => {
       setLobbyReady(true);
-      // If userData is sent, show who joined
       if (data && data.userData && data.userData.length > 1) {
         setJoinedUser(data.userData[1]);
       }
@@ -78,6 +79,21 @@ export default function Home() {
       socket.off('lobby_ready', onLobbyReady);
     };
   }, []);
+
+  useEffect(() => {
+    // Listen for lobby_game_started only once
+    const onGameStarted = ({ questions, gameId }) => {
+      setLobbyMode(null);
+      setLobbyCode('');
+      setLobbyReady(false);
+      setJoinedUser(null);
+      navigate('/questions', { state: { anonymous, name, questions, gameId } });
+    };
+    socket.on('lobby_game_started', onGameStarted);
+    return () => {
+      socket.off('lobby_game_started', onGameStarted);
+    };
+  }, [navigate, name, anonymous]);
 
   // Force browser back to go to home
   useEffect(() => {
@@ -92,7 +108,7 @@ export default function Home() {
     <div ref={homeRef} className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-400 to-purple-500 px-4 py-10 relative overflow-hidden">
       {/* Home Button */}
       <button
-        onClick={() => navigate('/')}
+        onClick={resetHome}
         className="absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full px-3 py-1 text-sm font-semibold shadow z-10"
       >
         🏠 Home
