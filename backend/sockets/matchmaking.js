@@ -87,9 +87,9 @@ module.exports = (io) => {
         { socketId: socket.id, name: userData.name, anonymous: userData.anonymous, answers: [] },
         { upsert: true }
       );
-      // Notify both users lobby is ready
-      io.to(lobby.users[0]).emit('lobby_ready', { code });
-      io.to(lobby.users[1]).emit('lobby_ready', { code });
+      // Notify both users lobby is ready, include userData for name display
+      io.to(lobby.users[0]).emit('lobby_ready', { code, userData: lobby.userData });
+      io.to(lobby.users[1]).emit('lobby_ready', { code, userData: lobby.userData });
       cb && cb({ success: true });
     });
 

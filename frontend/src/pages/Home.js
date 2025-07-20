@@ -12,6 +12,7 @@ export default function Home() {
   const [error, setError] = useState('');
   const [lobbyReady, setLobbyReady] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
+  const [joinedUser, setJoinedUser] = useState(null);
   const navigate = useNavigate();
   const homeRef = useRef();
 
@@ -27,9 +28,6 @@ export default function Home() {
     socket.emit('create_lobby', { name, anonymous }, ({ code }) => {
       setLobbyCode(code);
       setWaiting(false);
-    });
-    socket.on('lobby_ready', () => {
-      setLobbyReady(true);
     });
   };
 
@@ -47,9 +45,6 @@ export default function Home() {
       if (res && res.error) setError(res.error);
       else setLobbyCode(inputCode.trim().toUpperCase());
     });
-    socket.on('lobby_ready', () => {
-      setLobbyReady(true);
-    });
   };
 
   const handleStartLobbyGame = () => {
@@ -65,10 +60,24 @@ export default function Home() {
     };
     socket.on('lobby_game_started', onGameStarted);
     return () => {
-      socket.off('lobby_ready');
       socket.off('lobby_game_started', onGameStarted);
     };
   }, [navigate, name, anonymous]);
+
+  useEffect(() => {
+    // Listen for lobby_ready only once
+    const onLobbyReady = (data) => {
+      setLobbyReady(true);
+      // If userData is sent, show who joined
+      if (data && data.userData && data.userData.length > 1) {
+        setJoinedUser(data.userData[1]);
+      }
+    };
+    socket.on('lobby_ready', onLobbyReady);
+    return () => {
+      socket.off('lobby_ready', onLobbyReady);
+    };
+  }, []);
 
   // Force browser back to go to home
   useEffect(() => {
@@ -141,9 +150,16 @@ export default function Home() {
             <p className="text-xl font-mono font-bold text-blue-700 mb-2">{lobbyCode || '...'}</p>
             {!lobbyReady && <p className="text-sm text-gray-500">Waiting for another player to join...</p>}
             {lobbyReady && isCreator && (
-              <button onClick={handleStartLobbyGame} className="mt-3 bg-blue-700 hover:bg-blue-800 text-white py-2 px-6 rounded-full font-semibold">
-                Start Now
-              </button>
+              <>
+                <button onClick={handleStartLobbyGame} className="mt-3 bg-blue-700 hover:bg-blue-800 text-white py-2 px-6 rounded-full font-semibold">
+                  Start Now
+                </button>
+                {joinedUser && (
+                  <div className="mt-2 text-green-700 text-sm font-semibold">
+                    Joined: {joinedUser.anonymous ? 'Anonymous' : (joinedUser.name || 'Anonymous')}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
