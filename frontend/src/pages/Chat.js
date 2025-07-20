@@ -21,6 +21,11 @@ export default function Chat() {
       setMessages(msgs => [...msgs, { message, from }]);
     });
 
+    socket.on('chat_ended', () => {
+      setChatEnded(true);
+      setTimer(0);
+    });
+
     if (gameId) {
       socket.emit('request_chat', { gameId });
       socket.on('chat_history', ({ messages }) => {
@@ -62,6 +67,7 @@ export default function Chat() {
   };
 
   const endChat = () => {
+    socket.emit('end_chat', { gameId, to: state.opponentSocketId });
     setChatEnded(true);
     setTimer(0);
   };

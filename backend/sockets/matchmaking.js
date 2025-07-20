@@ -159,6 +159,12 @@ module.exports = (io) => {
       io.to(socket.id).emit('chat_message', { message, from: 'me' });
     });
 
+    // Chat end handling
+    socket.on('end_chat', ({ gameId, to }) => {
+      io.to(to).emit('chat_ended');
+      io.to(socket.id).emit('chat_ended');
+    });
+
     // Request chat on refresh
     socket.on('request_chat', async ({ gameId }) => {
       const chat = await TempChat.findOne({ gameId });
