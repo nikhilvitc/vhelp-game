@@ -122,7 +122,14 @@ export default function Questions() {
   if (!question) return <div className="text-center mt-10 text-xl">⏳ Loading question...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-100 flex items-center justify-center px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-100 flex items-center justify-center px-4 py-10 relative">
+      {/* Home Button */}
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full px-3 py-1 text-sm font-semibold shadow z-10"
+      >
+        🏠 Home
+      </button>
       <div className="bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl text-center relative">
         <div className="absolute top-2 right-4 text-xs text-gray-400 font-mono">
           Lobby: {(lobbyCode || (gameId || '').slice(0, 6)).toUpperCase()}

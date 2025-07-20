@@ -69,7 +69,14 @@ export default function Chat() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100 py-10 px-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-6 flex flex-col">
+      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-6 flex flex-col relative">
+        {/* Home Button */}
+        <button
+          onClick={() => navigate('/')}
+          className="absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full px-3 py-1 text-sm font-semibold shadow transition z-10"
+        >
+          🏠 Home
+        </button>
         {!chatEnded && (
           <div className="text-sm text-gray-600 mb-3 text-center font-semibold">
             🕒 Time left: {timer}s
@@ -78,7 +85,12 @@ export default function Chat() {
 
         <div className="flex-1 overflow-y-auto space-y-3 mb-4 max-h-64 pr-2 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-100">
           {messages.map((msg, idx) => (
-            <div key={idx} className={`flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}>
+            <div key={idx} className={`flex items-end gap-2 ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}>
+              {msg.from !== 'me' && (
+                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 text-lg">
+                  <span role="img" aria-label="stranger">👤</span>
+                </div>
+              )}
               <div className="flex flex-col items-start max-w-[70%]">
                 <span className={`text-xs font-semibold ${msg.from === 'me' ? 'text-right text-blue-500' : 'text-left text-gray-600'}`}>
                   {msg.from === 'me' ? 'You' : 'Stranger'}
@@ -86,13 +98,18 @@ export default function Chat() {
                 <div
                   className={`mt-1 px-4 py-2 text-sm rounded-lg shadow transition-all
                     ${msg.from === 'me'
-                      ? 'bg-blue-600 text-white rounded-br-none'
-                      : 'bg-gray-200 text-gray-900 rounded-bl-none'
+                      ? 'bg-blue-600 text-white rounded-br-none border-2 border-blue-400'
+                      : 'bg-gray-200 text-gray-900 rounded-bl-none border-2 border-gray-300'
                     }`}
                 >
                   {msg.message}
                 </div>
               </div>
+              {msg.from === 'me' && (
+                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg">
+                  <span role="img" aria-label="me">🧑</span>
+                </div>
+              )}
             </div>
           ))}
           <div ref={messagesEndRef} />

@@ -23,7 +23,14 @@ export default function Match() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-200 via-pink-200 to-yellow-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-200 via-pink-200 to-yellow-100 relative">
+      {/* Home Button */}
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full px-3 py-1 text-sm font-semibold shadow z-10"
+      >
+        🏠 Home
+      </button>
       <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md w-full">
         <div className="animate-spin mx-auto mb-4 h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
         <h2 className="text-2xl font-bold text-gray-700 mb-2">Looking for a match...</h2>
