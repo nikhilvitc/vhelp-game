@@ -27,6 +27,7 @@ export default function Home() {
     setIsCreator(true);
     socket.emit('create_lobby', { name, anonymous }, ({ code }) => {
       setLobbyCode(code);
+      localStorage.setItem('lobbyCode', code);
       setWaiting(false);
     });
   };
@@ -43,7 +44,10 @@ export default function Home() {
     socket.emit('join_lobby', { code: inputCode.trim().toUpperCase(), userData: { name, anonymous } }, (res) => {
       setWaiting(false);
       if (res && res.error) setError(res.error);
-      else setLobbyCode(inputCode.trim().toUpperCase());
+      else {
+        setLobbyCode(inputCode.trim().toUpperCase());
+        localStorage.setItem('lobbyCode', inputCode.trim().toUpperCase());
+      }
     });
   };
 
@@ -57,6 +61,7 @@ export default function Home() {
     setName('');
     setLobbyMode(null);
     setLobbyCode('');
+    localStorage.removeItem('lobbyCode');
     setInputCode('');
     setWaiting(false);
     setError('');
@@ -96,6 +101,14 @@ export default function Home() {
       socket.off('start_questions', onStartQuestions);
     };
   }, [navigate, name, anonymous]);
+
+  // Rejoin lobby on mount if lobbyCode is present
+  useEffect(() => {
+    const code = lobbyCode || localStorage.getItem('lobbyCode');
+    if (code) {
+      socket.emit('rejoin_lobby', { code, userData: { name, anonymous } });
+    }
+  }, [lobbyCode, name, anonymous]);
 
   // Force browser back to go to home
   useEffect(() => {

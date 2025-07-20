@@ -139,6 +139,23 @@ module.exports = (io) => {
       });
     });
 
+    // Rejoin lobby event for reconnects
+    socket.on('rejoin_lobby', async ({ code, userData }) => {
+      const lobby = lobbies[code];
+      if (!lobby) return;
+      // Remove any previous entry for this user (by name or previous socketId)
+      lobby.users = lobby.users.filter(id => id !== socket.id);
+      lobby.users.push(socket.id);
+      // Update userData if provided
+      if (userData) {
+        lobby.userData = lobby.userData.filter(u => u.name !== userData.name);
+        lobby.userData.push(userData);
+      }
+      // Notify both users lobby is ready, include userData for name display
+      io.to(lobby.users[0]).emit('lobby_ready', { code, userData: lobby.userData });
+      if (lobby.users[1]) io.to(lobby.users[1]).emit('lobby_ready', { code, userData: lobby.userData });
+    });
+
     // ...rest of the code (question_answered, disconnect, sendQuestion)
     socket.on('question_answered', ({ gameId, answer }) => {
       const game = activeGames[gameId];
