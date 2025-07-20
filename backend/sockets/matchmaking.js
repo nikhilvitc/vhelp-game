@@ -26,6 +26,12 @@ module.exports = (io) => {
       queue.push({ ...userData, socketId: socket.id });
       console.log('Current queue:', queue.map(u => u.socketId));
       if (queue.length >= 2) {
+        // Prevent matching the same user with themselves
+        if (queue[0].socketId === queue[1].socketId) {
+          // Remove the duplicate and do not match
+          queue.splice(1, 1);
+          return;
+        }
         const [user1, user2] = queue.splice(0, 2);
         console.log('Matched:', user1.socketId, user2.socketId);
         const questions = await Question.aggregate([{ $sample: { size: 5 } }]);
