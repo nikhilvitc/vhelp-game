@@ -11,6 +11,10 @@ export default function Chat() {
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
   const gameId = state?.gameId;
+  const myName = state?.myName;
+  const myAnonymous = state?.myAnonymous;
+  const opponentName = state?.opponentName;
+  const opponentAnonymous = state?.opponentAnonymous;
 
   useEffect(() => {
     socket.on('chat_message', ({ message, from }) => {
@@ -53,7 +57,6 @@ export default function Chat() {
         from: 'me',
         to: state.opponentSocketId
       });
-      setMessages(msgs => [...msgs, { message: input, from: 'me' }]);
       setInput('');
     }
   };
@@ -93,7 +96,9 @@ export default function Chat() {
               )}
               <div className="flex flex-col items-start max-w-[70%]">
                 <span className={`text-xs font-semibold ${msg.from === 'me' ? 'text-right text-blue-500' : 'text-left text-gray-600'}`}>
-                  {msg.from === 'me' ? 'You' : 'Stranger'}
+                  {msg.from === 'me'
+                    ? (myAnonymous ? 'You' : myName || 'You')
+                    : (opponentAnonymous ? 'Stranger' : opponentName || 'Stranger')}
                 </span>
                 <div
                   className={`mt-1 px-4 py-2 text-sm rounded-lg shadow transition-all

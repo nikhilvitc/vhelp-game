@@ -39,6 +39,11 @@ export default function Questions() {
   const [waitingForOpponent, setWaitingForOpponent] = useState(false);
   const [showOops, setShowOops] = useState(false);
 
+  const myName = state?.myName;
+  const myAnonymous = state?.myAnonymous;
+  const opponentName = state?.opponentName;
+  const opponentAnonymous = state?.opponentAnonymous;
+
   // Socket listeners
   useEffect(() => {
     if (state?.questions && state?.gameId) {
@@ -131,6 +136,15 @@ export default function Questions() {
         🏠 Home
       </button>
       <div className="bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl text-center relative">
+        {/* Show player names if not anonymous */}
+        <div className="flex justify-between items-center mb-2">
+          <div className="text-xs font-semibold text-blue-700">
+            {myAnonymous ? 'You' : myName || 'You'}
+          </div>
+          <div className="text-xs font-semibold text-pink-700">
+            {opponentAnonymous ? 'Stranger' : opponentName || 'Stranger'}
+          </div>
+        </div>
         <div className="absolute top-2 right-4 text-xs text-gray-400 font-mono">
           Lobby: {(lobbyCode || (gameId || '').slice(0, 6)).toUpperCase()}
         </div>

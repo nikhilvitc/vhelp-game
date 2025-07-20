@@ -111,11 +111,31 @@ module.exports = (io) => {
             sendQuestion(io, gameId);
           } else {
             // All matched, allow chat
-            io.to(game.users[0]).emit('all_matched', { opponentSocketId: game.users[1], gameId });
-            io.to(game.users[1]).emit('all_matched', { opponentSocketId: game.users[0], gameId });
-            // Create temp chat
-            TempChat.create({ gameId, messages: [] });
-            delete activeGames[gameId];
+            // Fetch user info for both users
+            Promise.all([
+              UserSession.findOne({ socketId: game.users[0] }),
+              UserSession.findOne({ socketId: game.users[1] })
+            ]).then(([user1, user2]) => {
+              io.to(game.users[0]).emit('all_matched', {
+                opponentSocketId: game.users[1],
+                gameId,
+                myName: user1?.name,
+                myAnonymous: user1?.anonymous,
+                opponentName: user2?.name,
+                opponentAnonymous: user2?.anonymous
+              });
+              io.to(game.users[1]).emit('all_matched', {
+                opponentSocketId: game.users[0],
+                gameId,
+                myName: user2?.name,
+                myAnonymous: user2?.anonymous,
+                opponentName: user1?.name,
+                opponentAnonymous: user1?.anonymous
+              });
+              // Create temp chat
+              TempChat.create({ gameId, messages: [] });
+              delete activeGames[gameId];
+            });
           }
         } else {
           io.to(game.users[0]).emit('end_game');
