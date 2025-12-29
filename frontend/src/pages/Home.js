@@ -131,21 +131,22 @@ export default function Home() {
 
   return (
     <div ref={homeRef} className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-400 to-purple-500 px-4 py-10 relative overflow-hidden">
-      {/* Home Button */}
-      <button
-        onClick={resetHome}
-        className="absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full px-3 py-1 text-sm font-semibold shadow z-10"
-      >
-        🏠 Home
-      </button>
-      {/* Info Button (shows modal) */}
-      <button
-        onClick={() => setShowInfo(true)}
-        aria-label="How this game works"
-        className="absolute top-4 right-20 bg-white/90 hover:bg-white text-gray-800 rounded-full px-3 py-1 text-sm font-semibold shadow z-10"
-      >
-        ℹ️ Info
-      </button>
+      {/* Top-right controls: Home + Info */}
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-3">
+        <button
+          onClick={() => setShowInfo(true)}
+          aria-label="How this game works"
+          className="bg-white/90 hover:bg-white text-gray-800 rounded-full px-3 py-1 text-sm font-semibold shadow"
+        >
+          ℹ️ Info
+        </button>
+        <button
+          onClick={resetHome}
+          className="bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full px-3 py-1 text-sm font-semibold shadow"
+        >
+          🏠 Home
+        </button>
+      </div>
       {/* Blur Overlay with Spinner */}
       {waiting && (
         <div className="absolute inset-0 bg-white bg-opacity-60 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
