@@ -196,8 +196,8 @@ export default function Questions() {
                 ${
                   answered
                     ? selectedAnswer === i
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-300 text-gray-500'
+                      ? 'bg-blue-500 text-white opacity-100'
+                      : 'bg-gray-300 text-gray-500 opacity-60'
                     : 'bg-blue-600 hover:bg-blue-700 text-white'
                 }`}
             >
