@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import Confetti from 'react-confetti';
 import { useLocation, useNavigate } from 'react-router-dom';
 import socket from '../socket';
 import winSound from '../assets/win.mp3';
@@ -20,16 +21,61 @@ function OopsModal({ onRetry }) {
   );
 }
 
-function CongratsModal() {
+function CongratsModal({ onProceed, navigateState }) {
+  // Curtain reveal animation + confetti
+  const [open, setOpen] = useState(false);
+  const [showContent, setShowContent] = useState(false);
   useEffect(() => {
     const audio = new Audio(winSound);
-    audio.play();
+    audio.play().catch(() => {});
+    // start curtain open after short delay
+    const t1 = setTimeout(() => setOpen(true), 150);
+    const t2 = setTimeout(() => setShowContent(true), 850);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white rounded-xl shadow-2xl p-8 text-center animate-bounce">
-        <div className="text-5xl mb-2">🎉</div>
-        <h2 className="text-2xl font-bold text-green-600">Congratulations, you won!</h2>
+      <Confetti numberOfPieces={200} recycle={false} />
+      <div className="relative w-full max-w-2xl mx-4">
+        {/* Stage */}
+        <div className="bg-white rounded-xl shadow-2xl p-8 text-center overflow-hidden">
+          {/* Curtains (left & right) */}
+          <div
+            className="absolute top-0 left-0 h-full bg-red-600"
+            style={{ width: '50%', transform: open ? 'translateX(-110%)' : 'translateX(0)', transition: 'transform 800ms ease-out' }}
+          />
+          <div
+            className="absolute top-0 right-0 h-full bg-red-700"
+            style={{ width: '50%', transform: open ? 'translateX(110%)' : 'translateX(0)', transition: 'transform 800ms ease-out' }}
+          />
+
+          {/* Content revealed after curtains open */}
+          <div className="relative z-10 min-h-[160px] flex flex-col items-center justify-center">
+            {showContent ? (
+              <>
+                <div className="text-6xl mb-4">�</div>
+                <h2 className="text-3xl font-bold text-green-600 mb-2">You won!</h2>
+                <p className="text-sm text-gray-600 mb-6">Match found — you can start chatting now.</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => onProceed && onProceed()}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 transition"
+                  >
+                    Chat now
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="h-40 flex items-center justify-center">
+                <div className="text-xl text-gray-500">Revealing result...</div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
