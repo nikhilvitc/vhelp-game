@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react'
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Match from './pages/Match';
@@ -43,6 +44,7 @@ function App() {
   return (
     <Router>
       <AppRoutes />
+      <Analytics />
     </Router>
   );
 }
