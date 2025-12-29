@@ -14,6 +14,7 @@ export default function Home() {
   const [lobbyReady, setLobbyReady] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const [joinedUser, setJoinedUser] = useState(null);
+  const [onlineCount, setOnlineCount] = useState(0);
   const navigate = useNavigate();
   const homeRef = useRef();
 
@@ -103,6 +104,13 @@ export default function Home() {
     };
   }, [navigate, name, anonymous]);
 
+  // Listen for live online user count updates
+  useEffect(() => {
+    const onOnlineCount = (count) => setOnlineCount(count);
+    socket.on('online_count', onOnlineCount);
+    return () => socket.off('online_count', onOnlineCount);
+  }, []);
+
   // Rejoin lobby on mount if lobbyCode is present
   useEffect(() => {
     const code = lobbyCode || localStorage.getItem('lobbyCode');
@@ -158,7 +166,8 @@ export default function Home() {
       <div className={`bg-white rounded-3xl shadow-xl p-8 w-full max-w-md text-center transition duration-300 ease-in-out ${waiting ? 'opacity-30 pointer-events-none' : 'opacity-100'}`}>
         <div className="text-4xl mb-3">🎮</div>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">1v1 Compatibility Game</h1>
-        <p className="text-gray-600 mb-6">Find your perfect match by answering 5 fun questions!</p>
+  <p className="text-gray-600 mb-6">Find your perfect match by answering 5 fun questions!</p>
+  <p className="text-sm text-gray-800 mb-6">{onlineCount} user{onlineCount === 1 ? '' : 's'} online</p>
 
         <div className="flex items-center justify-center gap-2 mb-4">
           <input

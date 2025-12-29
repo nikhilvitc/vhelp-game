@@ -4,6 +4,8 @@ const TempChat = require('../models/TempChat');
 let queue = [];
 let activeGames = {};
 let lobbies = {};
+// Track connected clients to emit live online user count
+const connectedClients = new Set();
 
 function generateLobbyCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -11,6 +13,9 @@ function generateLobbyCode() {
 
 module.exports = (io) => {
   io.on('connection', (socket) => {
+    // Add to connected set and broadcast current online count
+    connectedClients.add(socket.id);
+    io.emit('online_count', connectedClients.size);
     // QUICK MATCH (unchanged)
     socket.on('find_match', async (userData) => {
       if (!userData || typeof userData !== 'object') {
@@ -253,6 +258,9 @@ module.exports = (io) => {
           if (lobbies[code].users.length === 0) delete lobbies[code];
         }
       }
+      // Remove from connected clients and broadcast updated count
+      connectedClients.delete(socket.id);
+      io.emit('online_count', connectedClients.size);
     });
   });
 };
