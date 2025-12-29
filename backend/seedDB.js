@@ -225,8 +225,19 @@ const questions = [
   { question: "VIT - strict or chill?", optionA: "Strict", optionB: "Chill" },
   { question: "Do you miss school days?", optionA: "Yes", optionB: "Not really" },
   { question: "Do you think you’ll pass all subjects?", optionA: "Of course", optionB: "Let’s hope" },
-  { question: "Do you believe in love at VIT?", optionA: "Yes", optionB: "LMAO no" }
-  { question: "Bubu or Dudu?", optionA: "Bubu", optionB: "Dudu" }
+  { question: "Do you believe in love at VIT?", optionA: "Yes", optionB: "LMAO no" },
+  { question: "Bubu or Dudu?", optionA: "Bubu", optionB: "Dudu" },
+
+  // VIT Chennai specific fun questions added
+  { question: "Best place to hang out on campus?", optionA: "Library Lawn", optionB: "TT Canteen" },
+  { question: "Favorite mess dish at VIT Chennai?", optionA: "Sambar Rice", optionB: "Biryani" },
+  { question: "Which block has the best views?", optionA: "SJT", optionB: "ASR" },
+  { question: "Where do you grab midnight food?", optionA: "Hostel Canteen", optionB: "Outside stalls" },
+  { question: "Preferred spot for group study?", optionA: "Central Library", optionB: "Lounge Areas" },
+  { question: "Best nearby hangout off-campus?", optionA: "ECR beach", optionB: "Phoenix Marketcity" },
+  { question: "Which fest do you look forward to?", optionA: "Riviera", optionB: "Tech Fest" },
+  { question: "Preferred transport to Chennai city?", optionA: "College Bus", optionB: "Cab/Auto" },
+  { question: "Favorite campus event?", optionA: "Cultural Night", optionB: "Hackathon" }
 ];
 
 const seedDB = async () => {
