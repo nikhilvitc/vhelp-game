@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import socket from '../socket';
 
 export default function Home() {
+  const [showInfo, setShowInfo] = useState(false);
   const [anonymous, setAnonymous] = useState(true);
   const [name, setName] = useState('');
   const [lobbyMode, setLobbyMode] = useState(null);
@@ -119,6 +120,15 @@ export default function Home() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [navigate]);
 
+  // Close info modal with Escape key
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') setShowInfo(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   return (
     <div ref={homeRef} className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-400 to-purple-500 px-4 py-10 relative overflow-hidden">
       {/* Home Button */}
@@ -127,6 +137,14 @@ export default function Home() {
         className="absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full px-3 py-1 text-sm font-semibold shadow z-10"
       >
         🏠 Home
+      </button>
+      {/* Info Button (shows modal) */}
+      <button
+        onClick={() => setShowInfo(true)}
+        aria-label="How this game works"
+        className="absolute top-4 right-20 bg-white/90 hover:bg-white text-gray-800 rounded-full px-3 py-1 text-sm font-semibold shadow z-10"
+      >
+        ℹ️ Info
       </button>
       {/* Blur Overlay with Spinner */}
       {waiting && (
@@ -217,6 +235,32 @@ export default function Home() {
 
         {error && <p className="text-sm text-red-600 mt-4">❌ {error}</p>}
       </div>
+      {/* Info Modal */}
+      {showInfo && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowInfo(false)}></div>
+          <div className="relative bg-white rounded-xl shadow-xl max-w-xl w-full p-6 z-40 mx-4">
+            <div className="flex items-start justify-between">
+              <h2 className="text-xl font-bold text-gray-800">How this game works</h2>
+              <button onClick={() => setShowInfo(false)} className="text-gray-500 hover:text-gray-800">✕</button>
+            </div>
+            <div className="mt-4 text-gray-700 space-y-3 text-sm">
+              <p>This is a 1v1 compatibility-style game. Quick overview:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li><strong>Quick Match:</strong> Immediately find a random opponent and play a 5-question round.</li>
+                <li><strong>Create Lobby:</strong> Create a private lobby and share the lobby code with a friend.</li>
+                <li><strong>Join Lobby:</strong> Enter a lobby code to join a friend's lobby.</li>
+                <li><strong>Anonymous or Named:</strong> Toggle anonymous to hide your name from opponents.</li>
+                <li><strong>Gameplay:</strong> Each player answers 5 fun questions. After answering, you'll see results and can chat with your match.</li>
+              </ul>
+              <p className="text-xs text-gray-500">Tip: If you create a lobby, press "Start Now" once another player joins. For the best experience, allow microphone/audio if prompted for voice features (if any).</p>
+            </div>
+            <div className="mt-6 text-right">
+              <button onClick={() => setShowInfo(false)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full font-semibold">Got it</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
